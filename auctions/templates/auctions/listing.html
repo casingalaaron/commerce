@@ -1,0 +1,115 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}{{ listing.title }}{% endblock %}
+
+{% block body %}
+    {% if user.request.winner == listing.winner %}
+        <div class="winner alert-successful">
+            Congratulations!!! You have won this listing.
+        </div>
+    {% endif %}
+    
+<div class="page">
+    
+    <div class="container">
+
+        <!-- IMAGE -->
+        <div class="image">
+            <img src="{{ listing.image_url }}" alt="auction-image">
+        </div>
+
+        <!-- MAIN -->
+        <div class="main">
+
+            <!-- LEFT -->
+            <div class="left">
+
+                <h2 class="title">{{ listing.title }}</h2>
+
+                <div class="prices">
+                    <p><b>Starting Price:</b> {{ listing.starting_bid }}</p>
+                    <p><b>{% if listing.owner%} Final Price: {% else %} Current Price:{% endif %}</b> 
+                        {% if bid %} {{highest_bid.amount}} 
+                        {% else %} No bidding yet</p> 
+                        {% endif %}
+                </div>
+
+                <hr>
+
+                <p class="desc">{{ listing.description }}</p>
+
+                <div class="meta">
+                    <p><b>Seller:</b> {{ listing.owner }}</p>
+                    <p><b>Category:</b> {{ listing.category }}</p>
+                    <p><b>Status:</b> {% if not listing.is_active %} Closed {% else %} Open{% endif %}</p>
+                </div>
+
+            </div>
+
+            <!-- RIGHT -->
+            <div class="right">
+
+                <!-- WATCHLIST (TEXT STYLE) -->
+                 {% if listing.is_active%}
+                <form method="POST" action="{%  url 'add_to_watchlist' listing.id %}">
+                    {% csrf_token %}
+                    {% if not request.user == listing.owner and not watchlist_exist %}
+                    <button class="link-btn">Add to watchlist</button>
+                    {% endif %}
+                </form>
+                
+                <form method="POST" action="{%  url 'remove_to_watchlist' listing.id %}">
+                    {% csrf_token %}
+                    {% if watchlist_exist %}
+                    <button class="btn danger">Remove to Watchlist</button>
+                    {% endif %}
+                </form>
+                <!-- BID -->
+                <form method="POST" class="bid" action="{% url 'place_bid' listing.id%}">
+                    {% csrf_token %}
+                    {% if not request.user == listing.owner%}
+                    <input type="number" name="bid" placeholder="Bid" step="0.01" >
+                    <button class="btn success">Place</button>
+                    {% endif %}
+                </form>
+
+                <form method="POST" action="{% url 'close_auction' listing.id%}">
+                    {% csrf_token %}
+                    {%  if request.user == listing.owner %}
+                    <button class="btn dark">Close Auction</button>
+                    {% endif %}
+                </form>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- COMMENTS -->
+        <div class="comments">
+
+            <form method="POST" class="comment-form" action="{% url 'comment' listing.id%}">
+                {% csrf_token %}
+                <input type="text" name="comment" placeholder="Write a comment...">
+                <button>Post</button>
+            </form>
+
+            {% for c in comment %}
+                <div class="comment-card">
+
+                    <div class="comment-user">
+                        {{ c.user }}
+                    </div>
+
+                    <div class="comment-body">
+                        {{ c.content }}
+                    </div>
+
+                </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
