@@ -3,7 +3,7 @@
 {% block title %}{{ listing.title }}{% endblock %}
 
 {% block body %}
-    {% if user.request.winner == listing.winner %}
+    {% if request.user.id == listing.winner_id  %}
         <div class="winner alert-successful">
             Congratulations!!! You have won this listing.
         </div>
